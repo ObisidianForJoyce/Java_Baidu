@@ -6,8 +6,9 @@ pool:
   vmImage: 'windows-latest'  # 使用微软托管代理
 
 variables:
-  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2
   system.debug: true  # 启用详细日志
+  TAR_VERBOSE: true   # 专用 TAR 日志
 
 steps:
 - task: Cache@2
@@ -71,3 +72,27 @@ steps:
   env:
     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+- script: |
+    echo "当前缓存路径：$(MAVEN_CACHE_FOLDER)"
+    echo "路径长度：${#MAVEN_CACHE_FOLDER}"
+  displayName: '路径验证'
+
+- script: |
+    # 清理 Maven 临时文件
+    find $(MAVEN_CACHE_FOLDER) -name "*.lock" -delete
+    find $(MAVEN_CACHE_FOLDER) -name "*.part" -delete
+    find $(MAVEN_CACHE_FOLDER) -name "_remote.repositories" -delete
+  displayName: '清理临时文件'
+  condition: always()  # 总是执行
+
+- script: |
+    # 安装 7-Zip
+    choco install 7zip -y
+
+    # 手动创建 TAR 包
+    7z a -ttar $(Build.SourcesDirectory)/cache.tar $(MAVEN_CACHE_FOLDER)
+
+    # 验证 TAR 包
+    7z l cache.tar
+  displayName: '手动 TAR 测试'
+  continueOnError: true  # 允许失败继续
