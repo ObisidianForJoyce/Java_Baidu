@@ -7,14 +7,16 @@ pool:
 
 variables:
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  system.debug: true  # 启用详细日志
 
 steps:
-- task: Cache@2  # Maven 依赖缓存加速
+- task: Cache@2
   inputs:
-    key: 'maven | "$(Agent.OS)" | pom.xml'
+    key: 'maven | "$(Agent.OS)" | **/pom.xml'
     restoreKeys: |
       maven | "$(Agent.OS)"
     path: $(MAVEN_CACHE_FOLDER)
+  displayName: 'Restore Maven Dependencies'
 
 - task: JavaToolInstaller@0  # 关键步骤
   inputs:
