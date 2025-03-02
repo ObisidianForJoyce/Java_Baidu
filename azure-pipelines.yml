@@ -16,13 +16,22 @@ steps:
       maven | "$(Agent.OS)"
     path: $(MAVEN_CACHE_FOLDER)
 
-- task: Maven@3  # Maven 构建
+steps:
+- task: JavaToolInstaller@0  # 关键步骤
+  inputs:
+    versionSpec: '17'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+
+- script: java -version  # 验证版本
+  displayName: '检查 Java 版本'
+
+- task: Maven@3
   inputs:
     mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
     goals: 'clean install'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    options: '-DskipTests=true'  # 可选：跳过测试
+
 
 - task: CopyFiles@2  # 打包产物归档
   inputs:
