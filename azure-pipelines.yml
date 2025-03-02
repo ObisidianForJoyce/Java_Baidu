@@ -37,7 +37,7 @@ steps:
 # 阶段 2: Maven 构建 (启用缓存)
 # ----------------------
 - script: |
-    mvn clean install -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)  # 指向缓存目录
+    mvn clean install -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)  
   displayName: '编译和打包'
 
 # ----------------------
