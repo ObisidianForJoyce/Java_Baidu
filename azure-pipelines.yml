@@ -54,7 +54,6 @@ steps:
 # Stage 4: Allure Report Generation
 # ----------------------
 - script: |
-    # Install Allure CLI
     npm install -g allure-commandline
     allure generate $(ALLURE_RESULTS_DIR) -o $(ALLURE_REPORT_DIR) --clean
   displayName: 'Generate Allure report'
