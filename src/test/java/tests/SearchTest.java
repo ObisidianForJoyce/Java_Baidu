@@ -19,8 +19,11 @@ public class SearchTest extends BaseTest {
         homePage.performSearch("Selenium Automation");
 
         // Verification
-        String pageTitle = driver.getTitle();
-        System.out.println("page title is: " + pageTitle);
-
+        // String pageTitle = driver.getTitle();
+        String pageURl = driver.getCurrentUrl();
+        // System.out.println("page title is: " + pageTitle);
+        System.out.println("page current URL is: " + pageURl);
+        Assert.assertTrue(pageURl.contains("Selenium"),
+                "Search result validation failed");
     }
 }

@@ -1,71 +1,95 @@
-# azure-pipelines.yml
 trigger:
-- master  # 监听 main 分支的代码提交
+- master
 
 pool:
-  vmImage: 'windows-latest'  # 使用微软托管代理
+  vmImage: 'windows-latest'
 
 variables:
+  JAVA_VERSION: '17'
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local="$(MAVEN_CACHE_FOLDER)"'  # Quotes for path safety
+  ALLURE_RESULTS_DIR: 'target/allure-results'              # Allure test results directory
+  ALLURE_REPORT_DIR: 'target/allure-report'                # Allure HTML report directory
 
 steps:
-- task: Cache@2  # Maven 依赖缓存加速
+# ----------------------
+# Stage 0: Cache Maven Dependencies
+# ----------------------
+- task: Cache@2
   inputs:
-    key: 'maven | "$(Agent.OS)" | pom.xml'
+    key: 'maven | "$(Agent.OS)" | **/pom.xml'
     restoreKeys: |
       maven | "$(Agent.OS)"
+      maven
     path: $(MAVEN_CACHE_FOLDER)
+  displayName: 'Cache Maven dependencies'
 
-- task: JavaToolInstaller@0  # 关键步骤
+# ----------------------
+# Stage 1: Java Environment Setup
+# ----------------------
+- task: JavaToolInstaller@0
   inputs:
-    versionSpec: '17'
+    versionSpec: $(JAVA_VERSION)
     jdkArchitectureOption: 'x64'
     jdkSourceOption: 'PreInstalled'
+  displayName: 'Install Java 17'
 
-- script: java -version  # 验证版本
-  displayName: '检查 Java 版本'
+# ----------------------
+# Stage 2: Maven Build (with cache)
+# ----------------------
+- script: |
+    mvn clean install -Dmaven.repo.local="$(MAVEN_CACHE_FOLDER)"
+  displayName: 'Build package'
 
-- task: Maven@3
+# ----------------------
+# Stage 3: UI Test Execution
+# ----------------------
+- script: |
+    mvn test -Dtest=SearchTest -Dmaven.repo.local="$(MAVEN_CACHE_FOLDER)"
+  displayName: 'Execute UI tests'
+  env:
+    EDGE_WEBDRIVER_PATH: $(System.DefaultWorkingDirectory)/drivers
+
+# ----------------------
+# Stage 4: Allure Report Generation
+# ----------------------
+- script: |
+    # Install Allure CLI
+    npm install -g allure-commandline
+    
+    # Generate HTML report
+    allure generate $(ALLURE_RESULTS_DIR) -o $(ALLURE_REPORT_DIR) --clean
+  displayName: 'Generate Allure report'
+
+# ----------------------
+# Stage 5: Test Results Publishing
+# ----------------------
+- task: PublishTestResults@2
   inputs:
-    mavenPomFile: 'pom.xml'
-    goals: 'clean install'
-    options: '-DskipTests=true'  # 可选：跳过测试
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    mergeTestResults: true
+  displayName: 'Publish test results'
+  condition: succeededOrFailed()
 
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: $(ALLURE_REPORT_DIR)
+    ArtifactName: 'AllureReport'
+  displayName: 'Publish Allure report'
 
-- task: CopyFiles@2  # 打包产物归档
+# ----------------------
+# Stage 6: Artifact Archiving
+# ----------------------
+- task: CopyFiles@2
   inputs:
     SourceFolder: 'target'
     Contents: '*.jar'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Collect build artifacts'
 
-- script: |
-    echo "运行 UI 测试"
-    mvn test -Dtest=SearchTest
-  displayName: '执行 UI 测试'
-  env:
-    EDGE_WEBDRIVER_PATH: $(System.DefaultWorkingDirectory)/drivers
-
-- script: |
-    mvn allure:report
-  displayName: '生成 Allure 报告'
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'Allure'
-    testResultsFiles: 'allure-results/*.xml'
-- task: PublishBuildArtifacts@1  # 发布构建产物
+- task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      echo "##vso[task.complete result=Succeeded;]DONE"
-  displayName: '发送通知'
-  condition: always()
-  env:
-    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
+    ArtifactName: 'JarFiles'
+  displayName: 'Publish build artifacts'
