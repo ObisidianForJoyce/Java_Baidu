@@ -56,8 +56,6 @@ steps:
 - script: |
     # Install Allure CLI
     npm install -g allure-commandline
-    
-    # Generate HTML report
     allure generate $(ALLURE_RESULTS_DIR) -o $(ALLURE_REPORT_DIR) --clean
   displayName: 'Generate Allure report'
 
