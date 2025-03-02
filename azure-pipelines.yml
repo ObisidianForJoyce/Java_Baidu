@@ -39,11 +39,6 @@ steps:
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
 - script: |
-    echo "验证 Edge 浏览器版本"
-    reg query "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\EdgeUpdate\Clients\{56EB18F8-B008-4CBD-B6D2-8C97FE7E9062}" /v pv
-  displayName: '检查 Edge 版本'
-
-- script: |
     echo "运行 UI 测试"
     mvn test -Dtest=SearchTest
   displayName: '执行 UI 测试'
