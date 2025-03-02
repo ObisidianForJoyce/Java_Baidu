@@ -6,6 +6,7 @@ pool:
 
 variables:
   JAVA_VERSION: '17'
+<<<<<<< HEAD
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local="$(MAVEN_CACHE_FOLDER)"'  # Quotes for path safety
   ALLURE_RESULTS_DIR: 'target/allure-results'              # Allure test results directory
@@ -26,12 +27,33 @@ steps:
 
 # ----------------------
 # Stage 1: Java Environment Setup
+=======
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository  # 缓存目录建议细化到 repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'     # 强制指定 Maven 使用缓存目录
+
+steps:
+# ----------------------
+# 阶段 0: 缓存 Maven 依赖
+# ----------------------
+- task: Cache@2
+  inputs:
+    key: 'maven | "$(Agent.OS)" | **/pom.xml'   # 根据 OS 和 pom.xml 内容生成唯一 key
+    restoreKeys: |                               # 若 key 不匹配则尝试部分匹配
+      maven | "$(Agent.OS)"
+      maven
+    path: $(MAVEN_CACHE_FOLDER)
+  displayName: '缓存 Maven 依赖'
+
+# ----------------------
+# 阶段 1: Java 环境设置
+>>>>>>> e8d24872ba8191f3c2c6e321d32c1206b244d098
 # ----------------------
 - task: JavaToolInstaller@0
   inputs:
     versionSpec: $(JAVA_VERSION)
     jdkArchitectureOption: 'x64'
     jdkSourceOption: 'PreInstalled'
+<<<<<<< HEAD
   displayName: 'Install Java 17'
 
 # ----------------------
@@ -47,10 +69,28 @@ steps:
 - script: |
     mvn test -Dtest=SearchTest -Dmaven.repo.local="$(MAVEN_CACHE_FOLDER)"
   displayName: 'Execute UI tests'
+=======
+  displayName: '安装 Java 17'
+
+# ----------------------
+# 阶段 2: Maven 构建 (启用缓存)
+# ----------------------
+- script: |
+    mvn clean install -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)  
+  displayName: '编译和打包'
+
+# ----------------------
+# 阶段 3: UI 测试执行 (同样启用缓存)
+# ----------------------
+- script: |
+    mvn test -Dtest=SearchTest -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+  displayName: '执行 UI 测试'
+>>>>>>> e8d24872ba8191f3c2c6e321d32c1206b244d098
   env:
     EDGE_WEBDRIVER_PATH: $(System.DefaultWorkingDirectory)/drivers
 
 # ----------------------
+<<<<<<< HEAD
 # Stage 4: Allure Report Generation
 # ----------------------
 - script: |
@@ -63,12 +103,16 @@ steps:
 
 # ----------------------
 # Stage 5: Test Results Publishing
+=======
+# 阶段 4: 测试结果发布
+>>>>>>> e8d24872ba8191f3c2c6e321d32c1206b244d098
 # ----------------------
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     mergeTestResults: true
+<<<<<<< HEAD
   displayName: 'Publish test results'
   condition: succeededOrFailed()
 
@@ -80,16 +124,31 @@ steps:
 
 # ----------------------
 # Stage 6: Artifact Archiving
+=======
+  displayName: '发布测试结果'
+  condition: succeededOrFailed()
+
+# ----------------------
+# 阶段 5: 产物归档
+>>>>>>> e8d24872ba8191f3c2c6e321d32c1206b244d098
 # ----------------------
 - task: CopyFiles@2
   inputs:
     SourceFolder: 'target'
     Contents: '*.jar'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+<<<<<<< HEAD
   displayName: 'Collect build artifacts'
+=======
+  displayName: '收集构建产物'
+>>>>>>> e8d24872ba8191f3c2c6e321d32c1206b244d098
 
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'JarFiles'
+<<<<<<< HEAD
   displayName: 'Publish build artifacts'
+=======
+  displayName: '发布构建产物'
+>>>>>>> e8d24872ba8191f3c2c6e321d32c1206b244d098
