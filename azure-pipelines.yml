@@ -16,7 +16,6 @@ steps:
       maven | "$(Agent.OS)"
     path: $(MAVEN_CACHE_FOLDER)
 
-steps:
 - task: JavaToolInstaller@0  # 关键步骤
   inputs:
     versionSpec: '17'
