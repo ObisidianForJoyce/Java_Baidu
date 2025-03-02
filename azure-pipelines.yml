@@ -1,14 +1,28 @@
 # azure-pipelines.yml
 trigger:
-- master  # 监听 master 分支触发构建
+- master
 
 pool:
-  vmImage: 'windows-latest'  # 必须使用 Windows 代理（预装 Edge）
+  vmImage: 'windows-latest'
 
 variables:
   JAVA_VERSION: '17'
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository  # 缓存目录建议细化到 repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'     # 强制指定 Maven 使用缓存目录
 
 steps:
+# ----------------------
+# 阶段 0: 缓存 Maven 依赖
+# ----------------------
+- task: Cache@2
+  inputs:
+    key: 'maven | "$(Agent.OS)" | **/pom.xml'   # 根据 OS 和 pom.xml 内容生成唯一 key
+    restoreKeys: |                               # 若 key 不匹配则尝试部分匹配
+      maven | "$(Agent.OS)"
+      maven
+    path: $(MAVEN_CACHE_FOLDER)
+  displayName: '缓存 Maven 依赖'
+
 # ----------------------
 # 阶段 1: Java 环境设置
 # ----------------------
@@ -20,17 +34,17 @@ steps:
   displayName: '安装 Java 17'
 
 # ----------------------
-# 阶段 2: Maven 构建
+# 阶段 2: Maven 构建 (启用缓存)
 # ----------------------
 - script: |
-    mvn clean install
+    mvn clean install -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)  # 指向缓存目录
   displayName: '编译和打包'
 
 # ----------------------
-# 阶段 3: UI 测试执行
+# 阶段 3: UI 测试执行 (同样启用缓存)
 # ----------------------
 - script: |
-    mvn test -Dtest=SearchTest
+    mvn test -Dtest=SearchTest -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
   displayName: '执行 UI 测试'
   env:
     EDGE_WEBDRIVER_PATH: $(System.DefaultWorkingDirectory)/drivers
