@@ -8,8 +8,8 @@ variables:
   JAVA_VERSION: '17'
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local="$(MAVEN_CACHE_FOLDER)"'  # Quotes for path safety
-  ALLURE_RESULTS_DIR: 'target/allure-results'              # Allure test results directory
-  ALLURE_REPORT_DIR: 'target/allure-report'                # Allure HTML report directory
+  ALLURE_RESULTS_DIR: $(System.DefaultWorkingDirectory)/target/allure-results
+  ALLURE_REPORT_DIR: $(System.DefaultWorkingDirectory)/target/allure-report
 
 steps:
 # ----------------------
@@ -50,12 +50,28 @@ steps:
   env:
     EDGE_WEBDRIVER_PATH: $(System.DefaultWorkingDirectory)/drivers
 
+- script: |
+    if not exist "$(ALLURE_RESULTS_DIR)" (
+      echo "##vso[task.logissue type=error]Allure results directory not found!"
+      exit 1
+    )
+    echo "Allure results found at: $(ALLURE_RESULTS_DIR)"
+  displayName: 'Validate Allure results'
+
 # ----------------------
 # Stage 4: Allure Report Generation
 # ----------------------
 - script: |
+    npm install -g npm
+    node --version
     npm install -g allure-commandline
-    allure generate $(ALLURE_RESULTS_DIR) -o $(ALLURE_REPORT_DIR) --clean
+    if exist "$(ALLURE_REPORT_DIR)" rmdir /s /q "$(ALLURE_REPORT_DIR)"
+    allure generate "$(ALLURE_RESULTS_DIR)" -o "$(ALLURE_REPORT_DIR)" --clean
+    if not exist "$(ALLURE_REPORT_DIR)/index.html" (
+      echo "##vso[task.logissue type=error]Allure report generation failed!"
+      exit 1
+    )
+    echo "Allure report generated at: $(ALLURE_REPORT_DIR)"
   displayName: 'Generate Allure report'
 
 # ----------------------
@@ -74,6 +90,7 @@ steps:
     PathtoPublish: $(ALLURE_REPORT_DIR)
     ArtifactName: 'AllureReport'
   displayName: 'Publish Allure report'
+  condition: succeeded()
 
 # ----------------------
 # Stage 6: Artifact Archiving
