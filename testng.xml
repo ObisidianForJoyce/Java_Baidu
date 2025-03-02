@@ -1,0 +1,7 @@
+<suite name="Baidu Test Suite">
+  <test name="Edge Tests">
+    <classes>
+      <class name="tests.SearchTest"/> 
+    </classes>
+  </test>
+</suite>

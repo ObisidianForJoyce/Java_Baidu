@@ -1,0 +1,3 @@
+tests\SearchTest.class
+pages\BaiduHomePage.class
+utilities\BaseTest.class
