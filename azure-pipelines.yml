@@ -1,3 +1,4 @@
+# azure-pipelines.yml
 trigger:
 - master
 
@@ -6,10 +7,8 @@ pool:
 
 variables:
   JAVA_VERSION: '17'
-  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-  MAVEN_OPTS: '-Dmaven.repo.local="$(MAVEN_CACHE_FOLDER)"'  # Quotes for path safety
-  ALLURE_RESULTS_DIR: $(System.DefaultWorkingDirectory)/target/allure-results
-  ALLURE_REPORT_DIR: $(System.DefaultWorkingDirectory)/target/allure-report
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository  # Cache directory should point to repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'    # Force Maven to use cache directory with path safety
 
 steps:
 # ----------------------
@@ -17,12 +16,12 @@ steps:
 # ----------------------
 - task: Cache@2
   inputs:
-    key: 'maven | "$(Agent.OS)" | **/pom.xml'
-    restoreKeys: |
+    key: 'maven | "$(Agent.OS)" | **/pom.xml'   # Unique key based on OS and pom.xml
+    restoreKeys: |                               # Fallback matching strategy
       maven | "$(Agent.OS)"
       maven
     path: $(MAVEN_CACHE_FOLDER)
-  displayName: 'Cache Maven dependencies'
+  displayName: '缓存 Maven 依赖'
 
 # ----------------------
 # Stage 1: Java Environment Setup
@@ -38,72 +37,41 @@ steps:
 # Stage 2: Maven Build (with cache)
 # ----------------------
 - script: |
-    mvn clean install -Dmaven.repo.local="$(MAVEN_CACHE_FOLDER)"
+    mvn clean install -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)  
   displayName: 'Build package'
 
 # ----------------------
 # Stage 3: UI Test Execution
 # ----------------------
 - script: |
-    mvn test -Dtest=SearchTest -Dmaven.repo.local="$(MAVEN_CACHE_FOLDER)"
+    mvn test -Dtest=SearchTest -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
   displayName: 'Execute UI tests'
   env:
     EDGE_WEBDRIVER_PATH: $(System.DefaultWorkingDirectory)/drivers
 
-- script: |
-    if not exist "$(ALLURE_RESULTS_DIR)" (
-      echo "##vso[task.logissue type=error]Allure results directory not found!"
-      exit 1
-    )
-    echo "Allure results found at: $(ALLURE_RESULTS_DIR)"
-  displayName: 'Validate Allure results'
-
 # ----------------------
-# Stage 4: Allure Report Generation
-# ----------------------
-- script: |
-    npm install -g npm
-    node --version
-    npm install -g allure-commandline
-    if exist "$(ALLURE_REPORT_DIR)" rmdir /s /q "$(ALLURE_REPORT_DIR)"
-    allure generate "$(ALLURE_RESULTS_DIR)" -o "$(ALLURE_REPORT_DIR)" --clean
-    if not exist "$(ALLURE_REPORT_DIR)/index.html" (
-      echo "##vso[task.logissue type=error]Allure report generation failed!"
-      exit 1
-    )
-    echo "Allure report generated at: $(ALLURE_REPORT_DIR)"
-  displayName: 'Generate Allure report'
-
-# ----------------------
-# Stage 5: Test Results Publishing
+# Stage 4: Test Results Publishing
 # ----------------------
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     mergeTestResults: true
-  displayName: 'Publish test results'
+  displayName: 'Test Results Publishing'
   condition: succeededOrFailed()
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: $(ALLURE_REPORT_DIR)
-    ArtifactName: 'AllureReport'
-  displayName: 'Publish Allure report'
-  condition: succeeded()
-
 # ----------------------
-# Stage 6: Artifact Archiving
+# Stage 5: Artifact Archiving
 # ----------------------
 - task: CopyFiles@2
   inputs:
     SourceFolder: 'target'
     Contents: '*.jar'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  displayName: 'Collect build artifacts'
+  displayName: 'Collect JAR artifacts'
 
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'JarFiles'
-  displayName: 'Publish build artifacts'
+  displayName: 'Publish JAR artifacts'
