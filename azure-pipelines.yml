@@ -21,7 +21,7 @@ steps:
       maven | "$(Agent.OS)"
       maven
     path: $(MAVEN_CACHE_FOLDER)
-  displayName: '缓存 Maven 依赖'
+  displayName: 'Cache Maven dependencies'
 
 # ----------------------
 # Stage 1: Java Environment Setup
