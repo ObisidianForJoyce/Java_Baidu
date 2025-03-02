@@ -1,98 +1,63 @@
 # azure-pipelines.yml
 trigger:
-- master  # 监听 main 分支的代码提交
+- master  # 监听 master 分支触发构建
 
 pool:
-  vmImage: 'windows-latest'  # 使用微软托管代理
+  vmImage: 'windows-latest'  # 必须使用 Windows 代理（预装 Edge）
 
 variables:
-  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2
-  system.debug: true  # 启用详细日志
-  TAR_VERBOSE: true   # 专用 TAR 日志
+  JAVA_VERSION: '17'
 
 steps:
-- task: Cache@2
+# ----------------------
+# 阶段 1: Java 环境设置
+# ----------------------
+- task: JavaToolInstaller@0
   inputs:
-    key: 'maven | "$(Agent.OS)" | **/pom.xml'
-    restoreKeys: |
-      maven | "$(Agent.OS)"
-    path: $(MAVEN_CACHE_FOLDER)
-  displayName: 'Restore Maven Dependencies'
-
-- task: JavaToolInstaller@0  # 关键步骤
-  inputs:
-    versionSpec: '17'
+    versionSpec: $(JAVA_VERSION)
     jdkArchitectureOption: 'x64'
     jdkSourceOption: 'PreInstalled'
+  displayName: '安装 Java 17'
 
-- script: java -version  # 验证版本
-  displayName: '检查 Java 版本'
-
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    goals: 'clean install'
-    options: '-DskipTests=true'  # 可选：跳过测试
-
-
-- task: CopyFiles@2  # 打包产物归档
-  inputs:
-    SourceFolder: 'target'
-    Contents: '*.jar'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
+# ----------------------
+# 阶段 2: Maven 构建
+# ----------------------
 - script: |
-    echo "运行 UI 测试"
+    mvn clean install
+  displayName: '编译和打包'
+
+# ----------------------
+# 阶段 3: UI 测试执行
+# ----------------------
+- script: |
     mvn test -Dtest=SearchTest
   displayName: '执行 UI 测试'
   env:
     EDGE_WEBDRIVER_PATH: $(System.DefaultWorkingDirectory)/drivers
 
-- script: |
-    mvn allure:report
-  displayName: '生成 Allure 报告'
-
+# ----------------------
+# 阶段 4: 测试结果发布
+# ----------------------
 - task: PublishTestResults@2
   inputs:
-    testResultsFormat: 'Allure'
-    testResultsFiles: 'allure-results/*.xml'
-- task: PublishBuildArtifacts@1  # 发布构建产物
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    mergeTestResults: true
+  displayName: '发布测试结果'
+  condition: succeededOrFailed()
+
+# ----------------------
+# 阶段 5: 产物归档
+# ----------------------
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'target'
+    Contents: '*.jar'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: '收集构建产物'
+
+- task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      echo "##vso[task.complete result=Succeeded;]DONE"
-  displayName: '发送通知'
-  condition: always()
-  env:
-    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-- script: |
-    echo "当前缓存路径：$(MAVEN_CACHE_FOLDER)"
-    echo "路径长度：${#MAVEN_CACHE_FOLDER}"
-  displayName: '路径验证'
-
-- script: |
-    # 清理 Maven 临时文件
-    find $(MAVEN_CACHE_FOLDER) -name "*.lock" -delete
-    find $(MAVEN_CACHE_FOLDER) -name "*.part" -delete
-    find $(MAVEN_CACHE_FOLDER) -name "_remote.repositories" -delete
-  displayName: '清理临时文件'
-  condition: always()  # 总是执行
-
-- script: |
-    # 安装 7-Zip
-    choco install 7zip -y
-
-    # 手动创建 TAR 包
-    7z a -ttar $(Build.SourcesDirectory)/cache.tar $(MAVEN_CACHE_FOLDER)
-
-    # 验证 TAR 包
-    7z l cache.tar
-  displayName: '手动 TAR 测试'
-  continueOnError: true  # 允许失败继续
+    ArtifactName: 'JarFiles'
+  displayName: '发布构建产物'
