@@ -1,14 +1,13 @@
-# azure-pipelines.yml
 trigger:
 - master
 
-pool:
-  vmImage: 'windows-latest'
+pool: JoyceP53  # slef-hosted agent pool
 
 variables:
-  JAVA_VERSION: '17'
-  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository  # Cache directory should point to repository
-  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'    # Force Maven to use cache directory with path safety
+  JAVA_HOME: C:\Program Files\Java\jdk-17  # Self-hosted agent already installed JDK 17
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+  EDGE_WEBDRIVER_PATH: C:\drivers
 
 steps:
 # ----------------------
@@ -16,22 +15,12 @@ steps:
 # ----------------------
 - task: Cache@2
   inputs:
-    key: 'maven | "$(Agent.OS)" | **/pom.xml'   # Unique key based on OS and pom.xml
-    restoreKeys: |                               # Fallback matching strategy
+    key: 'maven | "$(Agent.OS)" | **/pom.xml'
+    restoreKeys: |
       maven | "$(Agent.OS)"
       maven
     path: $(MAVEN_CACHE_FOLDER)
   displayName: 'Cache Maven dependencies'
-
-# ----------------------
-# Stage 1: Java Environment Setup
-# ----------------------
-- task: JavaToolInstaller@0
-  inputs:
-    versionSpec: $(JAVA_VERSION)
-    jdkArchitectureOption: 'x64'
-    jdkSourceOption: 'PreInstalled'
-  displayName: 'Install Java 17'
 
 # ----------------------
 # Stage 2: Maven Build (with cache)
@@ -41,13 +30,14 @@ steps:
   displayName: 'Build package'
 
 # ----------------------
-# Stage 3: UI Test Execution
+# Stage 3: UI Test Execution (Headless Mode)
 # ----------------------
 - script: |
-    mvn test -Dtest=SearchTest -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
-  displayName: 'Execute UI tests'
+    mvn test -Dtest=SearchTest -Dbrowser.headless=true -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+  displayName: 'Execute UI tests (Headless Edge)'
   env:
-    EDGE_WEBDRIVER_PATH: $(System.DefaultWorkingDirectory)/drivers
+    EDGE_WEBDRIVER_PATH: $(EDGE_WEBDRIVER_PATH)  
+
 
 # ----------------------
 # Stage 4: Test Results Publishing
