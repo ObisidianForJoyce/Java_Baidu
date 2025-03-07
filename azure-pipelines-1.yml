@@ -8,11 +8,25 @@ variables:
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
   EDGE_WEBDRIVER_PATH: C:\drivers
+  MAVEN_HOME: C:\Users\Joyce\Install\maven\apache-maven-3.9.9  # Self-hosted agent already installed Maven 3.9.6
+  PATH: $(PATH);$(JAVA_HOME)\bin;$(MAVEN_HOME)\bin
 
 steps:
 # ----------------------
+# Stage 0: Maven 环境验证
+# ----------------------
+- script: |
+    echo "Java 版本:"
+    java -version
+    echo "Maven 版本:"
+    mvn -version
+  displayName: '环境检查'
+
+# ----------------------
 # Stage 0: Cache Maven Dependencies
 # ----------------------
+
+
 - task: Cache@2
   inputs:
     key: 'maven | "$(Agent.OS)" | **/pom.xml'
