@@ -1,33 +1,37 @@
+# azure-pipelines.yml
 trigger:
 - master
 
-pool: JoyceP53  # slef-hosted agent pool
+pool:
+  vmImage: 'windows-latest'
 
 variables:
-  JAVA_HOME: C:\Program Files\Java\jdk-17  # Self-hosted agent already installed JDK 17
-  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-  EDGE_WEBDRIVER_PATH: C:\drivers
+  JAVA_VERSION: '17'
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository  # Cache directory should point to repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'    # Force Maven to use cache directory with path safety
 
 steps:
-- script: |
-    echo "=== Git 全局配置 ==="
-    git config --global --list | findstr "ssl"
-    echo "=== 当前环境变量 ==="
-    set | findstr /I "SSL"
-  displayName: '验证配置生效性'
-
 # ----------------------
 # Stage 0: Cache Maven Dependencies
 # ----------------------
 - task: Cache@2
   inputs:
-    key: 'maven | "$(Agent.OS)" | **/pom.xml'
-    restoreKeys: |
+    key: 'maven | "$(Agent.OS)" | **/pom.xml'   # Unique key based on OS and pom.xml
+    restoreKeys: |                               # Fallback matching strategy
       maven | "$(Agent.OS)"
       maven
     path: $(MAVEN_CACHE_FOLDER)
   displayName: 'Cache Maven dependencies'
+
+# ----------------------
+# Stage 1: Java Environment Setup
+# ----------------------
+- task: JavaToolInstaller@0
+  inputs:
+    versionSpec: $(JAVA_VERSION)
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+  displayName: 'Install Java 17'
 
 # ----------------------
 # Stage 2: Maven Build (with cache)
@@ -37,14 +41,13 @@ steps:
   displayName: 'Build package'
 
 # ----------------------
-# Stage 3: UI Test Execution (Headless Mode)
+# Stage 3: UI Test Execution
 # ----------------------
 - script: |
-    mvn test -Dtest=SearchTest -Dbrowser.headless=true -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
-  displayName: 'Execute UI tests (Headless Edge)'
+    mvn test -Dtest=SearchTest -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+  displayName: 'Execute UI tests'
   env:
-    EDGE_WEBDRIVER_PATH: $(EDGE_WEBDRIVER_PATH)  
-
+    EDGE_WEBDRIVER_PATH: $(System.DefaultWorkingDirectory)/drivers
 
 # ----------------------
 # Stage 4: Test Results Publishing
