@@ -10,6 +10,14 @@ variables:
   EDGE_WEBDRIVER_PATH: C:\drivers
 
 steps:
+- script: |
+    echo "=== Git 全局配置 ==="
+    git config --global --list | findstr "ssl"
+    echo "=== 当前环境变量 ==="
+    set | findstr /I "SSL"
+  displayName: '验证配置生效性'
+  condition: succeededOrFailed()
+  
 # ----------------------
 # Stage 0: Cache Maven Dependencies
 # ----------------------
