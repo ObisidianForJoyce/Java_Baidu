@@ -1,0 +1,67 @@
+trigger:
+- master
+
+pool: JoyceP53  # slef-hosted agent pool
+
+variables:
+  JAVA_HOME: C:\Program Files\Java\jdk-17  # Self-hosted agent already installed JDK 17
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+  EDGE_WEBDRIVER_PATH: C:\drivers
+
+steps:
+# ----------------------
+# Stage 0: Cache Maven Dependencies
+# ----------------------
+- task: Cache@2
+  inputs:
+    key: 'maven | "$(Agent.OS)" | **/pom.xml'
+    restoreKeys: |
+      maven | "$(Agent.OS)"
+      maven
+    path: $(MAVEN_CACHE_FOLDER)
+  displayName: 'Cache Maven dependencies'
+
+# ----------------------
+# Stage 2: Maven Build (with cache)
+# ----------------------
+- script: |
+    mvn clean install -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)  
+  displayName: 'Build package'
+
+# ----------------------
+# Stage 3: UI Test Execution (Headless Mode)
+# ----------------------
+- script: |
+    mvn test -Dtest=SearchTest -Dbrowser.headless=true -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+  displayName: 'Execute UI tests (Headless Edge)'
+  env:
+    EDGE_WEBDRIVER_PATH: $(EDGE_WEBDRIVER_PATH)  
+
+
+# ----------------------
+# Stage 4: Test Results Publishing
+# ----------------------
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    mergeTestResults: true
+  displayName: 'Test Results Publishing'
+  condition: succeededOrFailed()
+
+# ----------------------
+# Stage 5: Artifact Archiving
+# ----------------------
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'target'
+    Contents: '*.jar'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Collect JAR artifacts'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'JarFiles'
+  displayName: 'Publish JAR artifacts'
