@@ -1,46 +1,29 @@
 trigger:
 - master
 
-pool: JoyceP53  # slef-hosted agent pool
+pool: JoyceP53  # self-hosted agent pool
 
 variables:
-  JAVA_HOME: C:\Program Files\Java\jdk-17  
+  JAVA_HOME: 'C:\Program Files\Java\jdk-17'  # 使用单引号包裹路径
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
   MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
   EDGE_WEBDRIVER_PATH: C:\drivers
-  MAVEN_HOME: C:\Users\Joyce\Install\maven\apache-maven-3.9.9 
-  PATH: $(PATH);$(JAVA_HOME)\bin;$(MAVEN_HOME)\bin
+  MAVEN_HOME: 'C:\Users\Joyce\Install\maven\apache-maven-3.9.9' 
+  PATH: $(PATH);'$(JAVA_HOME)\bin';'$(MAVEN_HOME)\bin'  # 路径用单引号包裹
 
 steps:
 # ----------------------
 # Stage 0: 环境验证
 # ----------------------
-- task: CmdLine@2
-  inputs:
-    script: |
-      set PATH=$(MAVEN_HOME)\bin;%PATH%
-      mvn clean install
-  displayName: '安装 Maven'
-  condition: succeededOrFailed()
-  
 - script: |
     echo "Java 版本:"
     java -version
     echo "Maven 版本:"
     mvn -version
   displayName: '环境检查'
-  condition: succeededOrFailed()
 
-- script: |
-    echo "=== Git 全局配置 ==="
-    git config --global --list | findstr "ssl"
-    echo "=== 当前环境变量 ==="
-    set | findstr /I "SSL"
-  displayName: '验证配置生效性'
-  condition: succeededOrFailed()
-  
 # ----------------------
-# Stage 0: Cache Maven Dependencies
+# Stage 1: Cache Maven Dependencies
 # ----------------------
 - task: Cache@2
   inputs:
@@ -55,7 +38,7 @@ steps:
 # Stage 2: Maven Build (with cache)
 # ----------------------
 - script: |
-    mvn clean install -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)  
+    mvn clean install -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
   displayName: 'Build package'
 
 # ----------------------
