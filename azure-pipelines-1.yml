@@ -53,7 +53,10 @@ steps:
 # Stage 3: UI Test Execution (Headless Mode)
 # ----------------------
 - script: |
-    mvn test -Dtest=SearchTest -Dbrowser.headless=true -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+    mvn test -Dtest=SearchTest ^
+      -Dwebdriver.edge.driver="C:\drivers\msedgedriver.exe" ^
+      -Dedge.binary.path="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" ^
+      -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
   displayName: 'Execute UI tests (Headless Edge)'
   env:
     EDGE_WEBDRIVER_PATH: $(EDGE_WEBDRIVER_PATH)  
