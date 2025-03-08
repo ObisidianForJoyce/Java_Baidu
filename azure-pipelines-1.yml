@@ -12,11 +12,16 @@ variables:
 
 steps:
 - script: |
-    echo "=== Java绝对路径验证 ==="
-    "%JAVA_HOME%\bin\java" -version
-    echo "=== Maven绝对路径验证 ==="
-    "%MAVEN_HOME%\bin\mvn.cmd" -version
-  displayName: '直接调用验证'
+    echo "Java 版本:"
+    java -version
+    echo "Maven 版本:"
+    mvn -version
+    echo "Edge 版本:"
+    msedgedriver --version
+    echo "where Maven:"
+    where mvn
+  displayName: '环境检查'
+  condition: succeededOrFailed()
 
 # ----------------------
 # Stage 1: Cache Maven Dependencies
