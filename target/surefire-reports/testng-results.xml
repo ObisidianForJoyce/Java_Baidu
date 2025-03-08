@@ -2,24 +2,24 @@
 <testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
   <reporter-output>
   </reporter-output>
-  <suite started-at="2025-03-02T11:36:57 CST" name="Baidu Test Suite" finished-at="2025-03-02T11:37:00 CST" duration-ms="2788">
+  <suite started-at="2025-03-08T12:01:36 CST" name="Surefire suite" finished-at="2025-03-08T12:01:38 CST" duration-ms="2903">
     <groups>
     </groups>
-    <test started-at="2025-03-02T11:36:57 CST" name="Edge Tests" finished-at="2025-03-02T11:37:00 CST" duration-ms="2788">
+    <test started-at="2025-03-08T12:01:36 CST" name="Surefire test" finished-at="2025-03-08T12:01:38 CST" duration-ms="2903">
       <class name="tests.SearchTest">
-        <test-method is-config="true" signature="setUp()[pri:0, instance:tests.SearchTest@647e447]" started-at="2025-03-02T11:36:57 CST" name="setUp" finished-at="2025-03-02T11:36:59 CST" duration-ms="1646" status="PASS">
+        <test-method is-config="true" signature="setUp()[pri:0, instance:tests.SearchTest@3c9d0b9d]" started-at="2025-03-08T12:01:36 CST" name="setUp" finished-at="2025-03-08T12:01:37 CST" duration-ms="1669" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- setUp -->
-        <test-method signature="testBasicSearchFunctionality()[pri:0, instance:tests.SearchTest@647e447]" started-at="2025-03-02T11:36:59 CST" name="testBasicSearchFunctionality" finished-at="2025-03-02T11:37:00 CST" duration-ms="914" status="PASS">
+        <test-method signature="testBasicSearchFunctionality()[pri:0, instance:tests.SearchTest@3c9d0b9d]" started-at="2025-03-08T12:01:37 CST" name="testBasicSearchFunctionality" finished-at="2025-03-08T12:01:38 CST" duration-ms="1019" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- testBasicSearchFunctionality -->
-        <test-method is-config="true" signature="tearDown()[pri:0, instance:tests.SearchTest@647e447]" started-at="2025-03-02T11:37:00 CST" name="tearDown" finished-at="2025-03-02T11:37:00 CST" duration-ms="191" status="PASS">
+        <test-method is-config="true" signature="tearDown()[pri:0, instance:tests.SearchTest@3c9d0b9d]" started-at="2025-03-08T12:01:38 CST" name="tearDown" finished-at="2025-03-08T12:01:38 CST" duration-ms="175" status="PASS">
           <reporter-output>
           </reporter-output>
         </test-method> <!-- tearDown -->
       </class> <!-- tests.SearchTest -->
-    </test> <!-- Edge Tests -->
-  </suite> <!-- Baidu Test Suite -->
+    </test> <!-- Surefire test -->
+  </suite> <!-- Surefire suite -->
 </testng-results>
