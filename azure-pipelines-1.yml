@@ -1,34 +1,28 @@
 trigger:
 - master
 
-pool: JoyceP53  # self-hosted agent pool
+pool: JoyceP53
 
 variables:
-  JAVA_HOME: 'C:\Program Files\Java\jdk-17'  # 使用单引号包裹路径
+  JAVA_HOME: "C:\\Program Files\\Java\\jdk-17"
+  MAVEN_HOME: "C:\\Users\\Joyce\\Install\\maven\\apache-maven-3.9.9"
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-  MAVEN_OPTS: '-Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
   EDGE_WEBDRIVER_PATH: C:\drivers
-  MAVEN_HOME: 'C:\Users\Joyce\Install\maven\apache-maven-3.9.9' 
-  PATH: $(PATH);'$(JAVA_HOME)\bin';'$(MAVEN_HOME)\bin'  # 路径用单引号包裹
-
+  PATH: 'C:\Windows\System32;$env:PATH;"$(JAVA_HOME)\bin";"$(MAVEN_HOME)\bin"'
 
 steps:
-# ----------------------
-# Stage 0: 环境验证
-# ----------------------
 - script: |
-    where java
-    where mvn
-    java -version
-    mvn -version
-  displayName: '验证命令路径'
+    echo "=== Java绝对路径验证 ==="
+    "%JAVA_HOME%\bin\java" -version
+    echo "=== Maven绝对路径验证 ==="
+    "%MAVEN_HOME%\bin\mvn.cmd" -version
+  displayName: '直接调用验证'
 
 - script: |
-    echo "Java 版本:"
-    java -version
-    echo "Maven 版本:"
-    mvn -version
-  displayName: '环境检查'
+    echo "当前PATH:" +"%PATH%"
+    where java
+    where mvn
+  displayName: '诊断PATH变量'
 
 # ----------------------
 # Stage 1: Cache Maven Dependencies
