@@ -21,9 +21,12 @@ public class BaseTest {
 
         // Edge browser options
         EdgeOptions options = new EdgeOptions();
-        options.addArguments("--start-maximized");
-        options.addArguments("--remote-allow-origins=*");
-
+        //options.addArguments("--start-maximized");
+        //options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--headless=new");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--window-size=1920,1080");
+        System.out.println("Edge Options Arguments:: "+options.getArguments());
         driver = new EdgeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     }
