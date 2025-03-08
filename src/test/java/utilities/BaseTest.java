@@ -35,7 +35,8 @@ public class BaseTest {
                 "--disable-extensions",
                 "--disable-software-rasterizer",
                 "--remote-allow-origins=*",
-                "--ignore-certificate-errors");
+                "--ignore-certificate-errors",
+                "--memory-pressure-off");
         // EdgeDriverService service = new EdgeDriverService.Builder()
         // .withLogFile(new File("C:\\agent\\_work\\logs\\edgedriver.log")) // 日志保存路径
         // .withVerbose(true) // 启用详细日志

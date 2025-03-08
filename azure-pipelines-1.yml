@@ -56,12 +56,12 @@ steps:
     mvn test -Dtest=SearchTest ^
       -Dwebdriver.edge.driver="C:\drivers\msedgedriver.exe" ^
       -Dedge.binary.path="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" ^
+      -Dwebdriver.edge.logfile="C:\agent\_work\logs\edgedriver.log" ^
+      -Dwebdriver.edge.verboseLogging=true ^
       -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
-  displayName: 'Execute UI tests (Headless Edge)'
+  displayName: 'Execute UI tests with Full Logging'
   env:
-    EDGE_WEBDRIVER_PATH: $(EDGE_WEBDRIVER_PATH)  
-
-
+    EDGE_WEBDRIVER_PATH: $(EDGE_WEBDRIVER_PATH)
 # ----------------------
 # Stage 4: Test Results Publishing
 # ----------------------
