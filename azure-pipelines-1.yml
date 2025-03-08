@@ -35,6 +35,10 @@ steps:
     path: $(MAVEN_CACHE_FOLDER)
   displayName: 'Cache Maven dependencies'
 
+- script: |
+    dir "%EDGE_WEBDRIVER_PATH%\msedgedriver.exe"
+  displayName: '检查Edge驱动是否存在'
+  
 # ----------------------
 # Stage 2: Maven Build (with cache)
 # ----------------------
