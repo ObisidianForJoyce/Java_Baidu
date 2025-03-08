@@ -3,9 +3,12 @@ package utilities;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeDriverService;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+
+import java.io.File;
 import java.time.Duration;
 
 /**
@@ -23,9 +26,21 @@ public class BaseTest {
         EdgeOptions options = new EdgeOptions();
         // options.addArguments("--start-maximized");
         // options.addArguments("--remote-allow-origins=*");
-        options.addArguments("--headless=new");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--window-size=1920,1080");
+        options.addArguments(
+                "--headless=new",
+                "--remote-debugging-port=9222",
+                "--disable-gpu",
+                "--no-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-extensions",
+                "--disable-software-rasterizer",
+                "--remote-allow-origins=*",
+                "--ignore-certificate-errors");
+        // EdgeDriverService service = new EdgeDriverService.Builder()
+        // .withLogFile(new File("C:\\agent\\_work\\logs\\edgedriver.log")) // 日志保存路径
+        // .withVerbose(true) // 启用详细日志
+        // .build();
+        // driver = new EdgeDriver(service, options);
         driver = new EdgeDriver(options);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     }

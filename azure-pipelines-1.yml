@@ -39,6 +39,10 @@ steps:
     dir "%EDGE_WEBDRIVER_PATH%\msedgedriver.exe"
   displayName: '检查Edge驱动是否存在'
   
+- script: |
+    taskkill /f /im msedge.exe /t || echo "未找到 Edge 进程"
+    taskkill /f /im msedgedriver.exe /t || echo "未找到 Edge 驱动进程"
+  displayName: '清理残留进程'  
 # ----------------------
 # Stage 2: Maven Build (with cache)
 # ----------------------
