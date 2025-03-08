@@ -1,6 +1,8 @@
 package utilities;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+
+import org.openqa.selenium.SessionNotCreatedException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeDriverService;
@@ -27,22 +29,22 @@ public class BaseTest {
         // options.addArguments("--start-maximized");
         // options.addArguments("--remote-allow-origins=*");
         options.addArguments(
-                "--headless=new",
-                "--remote-debugging-port=9222",
+                "--headless", // 使用传统无头模式
                 "--disable-gpu",
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
-                "--disable-extensions",
-                "--disable-software-rasterizer",
-                "--remote-allow-origins=*",
-                "--ignore-certificate-errors",
-                "--memory-pressure-off");
-        // EdgeDriverService service = new EdgeDriverService.Builder()
-        // .withLogFile(new File("C:\\agent\\_work\\logs\\edgedriver.log")) // 日志保存路径
-        // .withVerbose(true) // 启用详细日志
-        // .build();
-        // driver = new EdgeDriver(service, options);
-        driver = new EdgeDriver(options);
+                "--remote-allow-origins=*");
+        EdgeDriverService service = new EdgeDriverService.Builder()
+                .withLogFile(new File("target/edgedriver.log")) // 使用相对路径
+                .withVerbose(true)
+                .build();
+        try {
+            driver = new EdgeDriver(service, options);
+        } catch (SessionNotCreatedException e) {
+            System.out.println("Edge启动失败，详细错误信息：");
+            e.printStackTrace();
+            throw e; // 继续抛出异常以中断测试
+        }
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
     }
 
