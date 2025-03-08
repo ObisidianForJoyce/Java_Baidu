@@ -19,7 +19,6 @@ steps:
   displayName: '直接调用验证'
 
 - script: |
-    echo "当前PATH:" +"%PATH%"
     where java
     where mvn
   displayName: '诊断PATH变量'
