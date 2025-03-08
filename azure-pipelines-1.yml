@@ -18,11 +18,6 @@ steps:
     "%MAVEN_HOME%\bin\mvn.cmd" -version
   displayName: '直接调用验证'
 
-- script: |
-    where java
-    where mvn
-  displayName: '诊断PATH变量'
-
 # ----------------------
 # Stage 1: Cache Maven Dependencies
 # ----------------------
