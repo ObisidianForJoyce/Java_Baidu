@@ -26,8 +26,7 @@ public class BaseTest {
         // System.setProperty("webdriver.edge.driver", "C:\\drivers\\msedgedriver.exe");
         // Edge browser options
         EdgeOptions options = new EdgeOptions();
-        // options.setBinary("C:\\Program Files
-        // (x86)\\Microsoft\\MicrosoftEdge\\App\\msedge.exe");
+        options.setBinary("C:\\Program Files (x86)\\Microsoft\\Edge\\msedge.exe");
         // options.addArguments("--start-maximized");
         // options.addArguments("--remote-allow-origins=*");
         options.addArguments(
