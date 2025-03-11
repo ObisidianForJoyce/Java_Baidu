@@ -48,6 +48,7 @@ steps:
 - script: |
     mvn clean install -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
   displayName: 'Build package'
+  condition: succeededOrFailed()
 
 # ----------------------
 # Stage 3: UI Test Execution (Headless Mode)
@@ -62,6 +63,7 @@ steps:
   displayName: 'Execute UI tests with Full Logging'
   env:
     EDGE_WEBDRIVER_PATH: $(EDGE_WEBDRIVER_PATH)
+  condition: succeededOrFailed()
 # ----------------------
 # Stage 4: Test Results Publishing
 # ----------------------
