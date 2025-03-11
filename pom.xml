@@ -10,7 +10,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <selenium.version>4.16.1</selenium.version>
+        <selenium.version>4.16.0</selenium.version>
         <webdrivermanager.version>5.6.3</webdrivermanager.version>
         <testng.version>7.8.0</testng.version>
         <maven.compiler.source>17</maven.compiler.source>

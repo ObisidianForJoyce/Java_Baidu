@@ -22,15 +22,16 @@ public class BaseTest {
     @BeforeMethod
     public void setUp() {
         // Configure Edge driver
-        // WebDriverManager.edgedriver().setup();
-        System.setProperty("webdriver.edge.driver", "C:\\drivers\\msedgedriver.exe");
+        WebDriverManager.edgedriver().setup();
+        // System.setProperty("webdriver.edge.driver", "C:\\drivers\\msedgedriver.exe");
         // Edge browser options
         EdgeOptions options = new EdgeOptions();
-        options.setBinary("C:\\Program Files (x86)\\Microsoft\\MicrosoftEdge\\App\\msedge.exe");
+        // options.setBinary("C:\\Program Files
+        // (x86)\\Microsoft\\MicrosoftEdge\\App\\msedge.exe");
         // options.addArguments("--start-maximized");
         // options.addArguments("--remote-allow-origins=*");
         options.addArguments(
-                "--headless", // 使用传统无头模式
+                // "--headless", // 使用传统无头模式
                 "--disable-gpu",
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
