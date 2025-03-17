@@ -9,24 +9,6 @@ variables:
 
 steps:
 # ----------------------
-# 动态路径配置阶段
-# ----------------------
-- script: |
-    echo ##vso[task.prependpath]%JAVA_HOME%/bin
-    echo ##vso[task.prependpath]%MAVEN_HOME%/bin
-    echo ##vso[task.prependpath]%EDGE_WEBDRIVER_PATH%
-  displayName: 'Configure Dynamic PATH'
-
-# ----------------------
-# 环境检查阶段
-# ----------------------
-- script: |
-    java -version
-    mvn -version
-    msedgedriver --version
-  displayName: 'Check Environment'
-
-# ----------------------
 # Stage 1: Cache Maven Dependencies
 # ----------------------
 - task: Cache@2
