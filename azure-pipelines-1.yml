@@ -10,20 +10,20 @@ variables:
   EDGE_WEBDRIVER_PATH: "C:\\drivers"
   EDGE_BINARY_PATH: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application"
   EDGE_DRIVER_LOGFILE: $(Agent.WorkFolder)\\logs\\edgedriver.log
-  PATH: 'C:\\Windows\\System32;$(PATH);"$(JAVA_HOME)\\bin";"$(MAVEN_HOME)\\bin"'
 
 steps:
 - script: |
-    echo "Java version:"
+    echo "##vso[task.prependpath]C:\\Windows\\System32"
+    echo "##vso[task.prependpath]$(JAVA_HOME)\\bin"
+    echo "##vso[task.prependpath]$(MAVEN_HOME)\\bin"
+    echo "##vso[task.prependpath]$(EDGE_WEBDRIVER_PATH)"
+  displayName: 'Set Dynamic PATH'
+
+- script: |
     java -version
-    echo "Maven version:"
     mvn -version
-    echo "Edge version:"
     msedgedriver --version
-    echo "where Maven:"
-    where mvn
-  displayName: 'Check Environment'
-  condition: succeededOrFailed()
+  displayName: 'Verify Commands'
 
 # ----------------------
 # Stage 1: Cache Maven Dependencies
