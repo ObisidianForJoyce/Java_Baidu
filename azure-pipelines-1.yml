@@ -12,15 +12,15 @@ variables:
 
 steps:
 - script: |
-    echo "Java 版本:"
+    echo "Java version:"
     java -version
-    echo "Maven 版本:"
+    echo "Maven version:"
     mvn -version
-    echo "Edge 版本:"
+    echo "Edge version:"
     msedgedriver --version
     echo "where Maven:"
     where mvn
-  displayName: '环境检查'
+  displayName: 'Check Environment'
   condition: succeededOrFailed()
 
 # ----------------------
@@ -37,7 +37,7 @@ steps:
 
 - script: |
     dir "%EDGE_WEBDRIVER_PATH%\msedgedriver.exe"
-  displayName: '检查Edge驱动是否存在'
+  displayName: 'Check whether the existing of edge driver'
 
 # ----------------------
 # Stage 2: Maven Build (with cache)
