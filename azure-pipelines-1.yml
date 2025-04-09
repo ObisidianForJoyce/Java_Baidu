@@ -4,25 +4,10 @@ trigger:
 pool: JoyceP53
 
 variables:
-  JAVA_HOME: "C:\\Program Files\\Java\\jdk-17"
-  MAVEN_HOME: "C:\\Users\\Joyce\\Install\\maven\\apache-maven-3.9.9"
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-  EDGE_WEBDRIVER_PATH: "C:\\drivers"
-  PATH: 'C:\Windows\System32;$env:PATH;"$(JAVA_HOME)\bin";"$(MAVEN_HOME)\bin"'
+  EDGE_DRIVER_LOGFILE: $(Agent.WorkFolder)/logs/edgedriver.log
 
 steps:
-- script: |
-    echo "Java 版本:"
-    java -version
-    echo "Maven 版本:"
-    mvn -version
-    echo "Edge 版本:"
-    msedgedriver --version
-    echo "where Maven:"
-    where mvn
-  displayName: '环境检查'
-  condition: succeededOrFailed()
-
 # ----------------------
 # Stage 1: Cache Maven Dependencies
 # ----------------------
@@ -36,8 +21,8 @@ steps:
   displayName: 'Cache Maven dependencies'
 
 - script: |
-    dir "%EDGE_WEBDRIVER_PATH%\msedgedriver.exe"
-  displayName: '检查Edge驱动是否存在'
+    dir "$(EDGE_WEBDRIVER_PATH)\\msedgedriver.exe"
+  displayName: 'Check Edge Driver Existence'
 
 # ----------------------
 # Stage 2: Maven Build (with cache)
@@ -52,15 +37,16 @@ steps:
 # ----------------------
 - script: |
     mvn test -Dtest=SearchTest ^
-      -Dwebdriver.edge.driver="C:\drivers\msedgedriver.exe" ^
-      -Dedge.binary.path="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" ^
-      -Dwebdriver.edge.logfile="C:\agent\_work\logs\edgedriver.log" ^
+      -Dwebdriver.edge.driver="$(EDGE_WEBDRIVER_PATH)\\msedgedriver.exe" ^
+      -Dedge.binary.path="$(EDGE_BINARY_PATH)\\msedge.exe" ^
+      -Dwebdriver.edge.logfile="$(EDGE_DRIVER_LOGFILE)" ^
       -Dwebdriver.edge.verboseLogging=true ^
       -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
   displayName: 'Execute UI tests with Full Logging'
   env:
     EDGE_WEBDRIVER_PATH: $(EDGE_WEBDRIVER_PATH)
   condition: succeededOrFailed()
+
 # ----------------------
 # Stage 4: Test Results Publishing
 # ----------------------
@@ -69,7 +55,7 @@ steps:
     testResultsFormat: 'JUnit'
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     mergeTestResults: true
-  displayName: 'Test Results Publishing'
+  displayName: 'Publish Test Results'
   condition: succeededOrFailed()
 
 # ----------------------
@@ -80,10 +66,10 @@ steps:
     SourceFolder: 'target'
     Contents: '*.jar'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  displayName: 'Collect JAR artifacts'
+  displayName: 'Collect JAR Artifacts'
 
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'JarFiles'
-  displayName: 'Publish JAR artifacts'
+  displayName: 'Publish JAR Artifacts'
